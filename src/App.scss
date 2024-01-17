@@ -37,6 +37,12 @@
         box-shadow: 0 0 1rem #888;
         overflow: hidden;
         position: relative;
+        transition: all 0.2s ease-in-out;
+
+        &.dragging {
+            border: 2px solid #646cff;
+            box-shadow: 0 0 2rem #8389ff;
+        }
 
         .drag-div {
             display: flex;
@@ -47,16 +53,17 @@
             border: 2px dashed #888;
             border-radius: 0.5rem;
             box-shadow: 0 0 1rem #888;
-            font-weight: Bold;
+            font-weight: bold;
+            transition: all 0.2s ease-in-out;
 
             &:hover {
-                border: 2px dashed #646cff;
+                border: 2px solid #646cff;
                 box-shadow: 0 0 1rem #646cff;
             }
 
-            .is-dragging {
+            &.dragging {
                 border: 2px dashed #646cff;
-                box-shadow: 0 0 1rem #646cff;
+                box-shadow: 0 0 5rem #8389ff;
             }
         }
     }

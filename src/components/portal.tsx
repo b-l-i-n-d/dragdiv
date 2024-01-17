@@ -8,7 +8,7 @@ interface PortalProps {
 
 export const Portal = ({ children, target }: PortalProps) => {
     let root: HTMLElement;
-    let el: HTMLDivElement | null = null; // Initialize with a default value of null
+    let el: HTMLDivElement | null = null;
     if (typeof window === "object") {
         if (target) {
             root = document.getElementById("root") as HTMLElement;
@@ -34,5 +34,5 @@ export const Portal = ({ children, target }: PortalProps) => {
         // @ts-expect-error - This is a hack to get rid of the warning
     }, [el, root.nextSibling, root.parentElement]);
 
-    return createPortal(children, el!); // Use the non-null assertion operator to indicate that 'el' will not be null at this point
+    return createPortal(children, el!);
 };

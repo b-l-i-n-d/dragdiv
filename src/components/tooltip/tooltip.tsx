@@ -30,25 +30,20 @@ export const Tooltip = ({
     } | null>(null);
     let timeout: number | undefined;
     const [active, setActive] = useState(false);
+    const [isDragging, setIsDragging] = useState<boolean>(false);
 
     const handleMouseOver = () => {
-        showTip();
-    };
+        if (isDragging) return;
 
-    const handleMouseLeave = () => {
-        hideTip();
-        setPosition(null);
-    };
-
-    const showTip = () => {
         timeout = setTimeout(() => {
             setActive(true);
         }, delay || 400);
     };
 
-    const hideTip = () => {
+    const handleMouseLeave = () => {
         clearInterval(timeout);
         setActive(false);
+        setPosition(null);
     };
 
     const calculatePosition = (bounds: DOMRect, tooltipBounds: DOMRect) => {
@@ -73,7 +68,7 @@ export const Tooltip = ({
                 y: bounds.y + bounds.height + 5,
             },
             left: {
-                x: bounds.x - bounds.width - tooltipBounds?.width - 20,
+                x: bounds.x - tooltipBounds?.width - 5,
                 y: bounds.y + bounds.height / 2,
             },
             right: {
@@ -83,7 +78,7 @@ export const Tooltip = ({
         };
 
         if (
-            bounds.y + tooltipBounds?.height - 2 > innerY &&
+            bounds.y - tooltipBounds?.height - 2 < innerY &&
             direction === "top"
         ) {
             setCalculatedDirection("bottom");
@@ -92,7 +87,7 @@ export const Tooltip = ({
         }
 
         if (
-            bounds.x + tooltipBounds?.width - 2 > innerX &&
+            bounds.x - tooltipBounds?.width - 2 < innerX &&
             direction === "left"
         ) {
             setCalculatedDirection("right");
@@ -120,6 +115,7 @@ export const Tooltip = ({
             return;
         }
 
+        setCalculatedDirection(direction || "top");
         setPosition(positions[direction!]);
     };
 
@@ -136,11 +132,14 @@ export const Tooltip = ({
             <div
                 ref={triggerRef}
                 className={styles.tooltipWrapper}
-                // When to show the tooltip
                 onMouseEnter={handleMouseOver}
                 onMouseLeave={handleMouseLeave}
+                onDrag={() => {
+                    setIsDragging(true);
+                    setActive(false);
+                }}
+                onDragEnd={() => setIsDragging(false)}
             >
-                {/* Wrapping */}
                 {children}
             </div>
             {active && (
