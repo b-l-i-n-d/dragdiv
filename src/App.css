@@ -1,42 +1,60 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+    filter: drop-shadow(0 0 2em #646cffaa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
 }
 
 .card {
-  padding: 2em;
+    padding: 2em;
 }
 
 .read-the-docs {
-  color: #888;
+    color: #888;
+}
+
+.main-window {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 100dvw;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    min-width: 100dvw;
+
+    .drag-window {
+        min-height: 90dvh;
+        min-width: 90dvw;
+        border: 2px solid #888;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 1rem #888;
+
+        .drag-div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 5rem;
+            height: 5rem;
+            border: 2px dashed #888;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 1rem #888;
+            font-weight: Bold;
+
+            &:hover {
+                border: 2px dashed #646cff;
+                box-shadow: 0 0 1rem #646cff;
+            }
+
+            .is-dragging {
+                border: 2px dashed #646cff;
+                box-shadow: 0 0 1rem #646cff;
+            }
+        }
+    }
 }
