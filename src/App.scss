@@ -27,13 +27,16 @@
     max-height: 100dvh;
     min-height: 100dvh;
     min-width: 100dvw;
+    position: relative;
 
     .drag-window {
-        min-height: 90dvh;
-        min-width: 90dvw;
+        min-height: 70dvh;
+        min-width: 70dvw;
         border: 2px solid #888;
         border-radius: 0.5rem;
         box-shadow: 0 0 1rem #888;
+        overflow: hidden;
+        position: relative;
 
         .drag-div {
             display: flex;
