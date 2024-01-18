@@ -9,14 +9,14 @@ type Direction = "top" | "bottom" | "left" | "right";
 interface TooltipProps {
     children: React.ReactNode;
     direction?: Direction;
-    delay?: number;
+    // delay?: number;
     content: React.ReactNode;
 }
 
 export const Tooltip = ({
     children,
     direction,
-    delay,
+    // delay,
     content,
 }: TooltipProps) => {
     const triggerRef = useRef<HTMLDivElement>(null);
@@ -31,32 +31,30 @@ export const Tooltip = ({
     } | null>(null);
     const [active, setActive] = useState(false);
     const [isDragging, setIsDragging] = useState<boolean>(false);
-    let timeout: number | undefined;
+    // let timeout: number | undefined;
 
     const handleMouseOver = () => {
         if (isDragging) return;
 
-        timeout = setTimeout(() => {
-            setActive(true);
-        }, delay || 400);
+        // timeout = setTimeout(() => {
+        setActive(true);
+        // }, delay || 400);
     };
 
     const handleMouseLeave = () => {
-        clearInterval(timeout);
+        // clearInterval(timeout);
         setActive(false);
         setPosition(null);
     };
 
     const onPointerDown = (event: React.PointerEvent) => {
         (event.target as HTMLDivElement).setPointerCapture(event.pointerId);
-        // Do something ...
         setIsDragging(true);
         setActive(false);
     };
 
     const onPointerUp = (event: React.PointerEvent) => {
         (event.target as HTMLDivElement).releasePointerCapture(event.pointerId);
-        // Do something ...
         setIsDragging(false);
     };
 

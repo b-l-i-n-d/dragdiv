@@ -1,6 +1,6 @@
 import { MouseEvent, useState } from "react";
 
-import { DragDiv } from "./components/darg-div";
+import { DragDiv } from "./components/drag-div";
 import { DragWindow } from "./components/drag-window";
 import { MainWindow } from "./components/main-window";
 

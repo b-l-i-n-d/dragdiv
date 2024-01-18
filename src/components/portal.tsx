@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 import { createPortal } from "react-dom";
 
 interface PortalProps {
@@ -7,6 +7,7 @@ interface PortalProps {
 }
 
 export const Portal = ({ children, target }: PortalProps) => {
+    const id = useId();
     let root: HTMLElement;
     let el: HTMLDivElement | null = null;
     if (typeof window === "object") {
@@ -15,7 +16,7 @@ export const Portal = ({ children, target }: PortalProps) => {
         }
         el = document.createElement("div");
         el.setAttribute("style", "position:relative");
-        el.id = "portal-root";
+        el.id = `portal-root-${id}`;
     }
 
     useEffect(() => {
