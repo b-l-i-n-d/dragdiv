@@ -1,47 +1,47 @@
-.logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-    filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    a:nth-of-type(2) .logo {
-        animation: logo-spin infinite 20s linear;
-    }
-}
-
-.card {
-    padding: 2em;
-}
-
-.read-the-docs {
-    color: #888;
-}
-
 .main-window {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     max-width: 100dvw;
     max-height: 100dvh;
     min-height: 100dvh;
     min-width: 100dvw;
     position: relative;
+    background-color: var(--background-color);
+    transition: all 0.2s ease-in-out;
+
+    &.dragging {
+        background-color: rgba($color: #646cff, $alpha: 0.2);
+    }
 
     .drag-window {
-        min-height: 70dvh;
-        min-width: 70dvw;
+        max-height: 30dvh;
+        max-width: 30dvw;
+        min-height: 30dvh;
+        min-width: 30dvw;
         border: 2px solid #888;
         border-radius: 0.5rem;
         box-shadow: 0 0 1rem #888;
         overflow: hidden;
         position: relative;
-        transition: all 0.2s ease-in-out;
+        // transition: all 0.2s ease-in-out;
+        background-color: var(--background-color);
 
         &.dragging {
             border: 2px solid #646cff;
             box-shadow: 0 0 2rem #8389ff;
+        }
+
+        .drag-window-handle {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            padding: 0rem 0.1rem;
+            cursor: grab;
+            transition: all 0.2s ease-in-out;
+            border-radius: 0.5rem;
+
+            &:hover {
+                background-color: rgba($color: #fff, $alpha: 0.1);
+                color: #fff;
+            }
         }
 
         .drag-div {

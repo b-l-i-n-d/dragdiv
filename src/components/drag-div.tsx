@@ -24,7 +24,7 @@ export const DragDiv = ({
             }}
             onMouseDown={(e) => onMouseDown(e)}
         >
-            <Tooltip direction="left" content="This is a tooltip">
+            <Tooltip direction="top" content="This is a tooltip">
                 <div className={`drag-div ${isDragging && "dragging"}`}>
                     Drag
                 </div>

@@ -1,7 +1,12 @@
 interface MainWindowProps {
     children?: React.ReactNode;
+    className?: string;
 }
 
-export const MainWindow = ({ children }: MainWindowProps) => {
-    return <div className="main-window">{children}</div>;
+export const MainWindow = ({ children, className }: MainWindowProps) => {
+    return (
+        <div id="main-window" className={`main-window ${className}`}>
+            {children}
+        </div>
+    );
 };
