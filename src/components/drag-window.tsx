@@ -93,6 +93,15 @@ export const DragWindow = ({
                     }}
                 />
             </div>
+            {/* Resize handler */}
+            <div className="right-resize-handle"></div>
+            <div className="left-resize-handle"></div>
+            <div className="top-resize-handle"></div>
+            <div className="bottom-resize-handle"></div>
+            <div className="top-right-resize-handle"></div>
+            <div className="top-left-resize-handle"></div>
+            <div className="bottom-right-resize-handle"></div>
+            <div className="bottom-left-resize-handle"></div>
         </div>
     );
 };
