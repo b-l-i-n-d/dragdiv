@@ -47,6 +47,19 @@ export const Tooltip = ({
         setPosition(null);
     };
 
+    const onPointerDown = (event: React.PointerEvent) => {
+        (event.target as HTMLDivElement).setPointerCapture(event.pointerId);
+        // Do something ...
+        setIsDragging(true);
+        setActive(false);
+    };
+
+    const onPointerUp = (event: React.PointerEvent) => {
+        (event.target as HTMLDivElement).releasePointerCapture(event.pointerId);
+        // Do something ...
+        setIsDragging(false);
+    };
+
     const calculatePosition = (bounds: DOMRect, tooltipBounds: DOMRect) => {
         const {
             x: innerX,
@@ -135,11 +148,8 @@ export const Tooltip = ({
                 className={styles.tooltipWrapper}
                 onMouseEnter={handleMouseOver}
                 onMouseLeave={handleMouseLeave}
-                onMouseDown={() => {
-                    setIsDragging(true);
-                    setActive(false);
-                }}
-                onMouseUp={() => setIsDragging(false)}
+                onPointerDown={onPointerDown}
+                onPointerUp={onPointerUp}
             >
                 {children}
             </div>
