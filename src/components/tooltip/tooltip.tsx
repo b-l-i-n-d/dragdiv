@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { Portal } from "../portal";
+
 import styles from "./tooltip.module.scss";
 
 type Direction = "top" | "bottom" | "left" | "right";
@@ -28,9 +29,9 @@ export const Tooltip = ({
         x: number;
         y: number;
     } | null>(null);
-    let timeout: number | undefined;
     const [active, setActive] = useState(false);
     const [isDragging, setIsDragging] = useState<boolean>(false);
+    let timeout: number | undefined;
 
     const handleMouseOver = () => {
         if (isDragging) return;
@@ -134,11 +135,11 @@ export const Tooltip = ({
                 className={styles.tooltipWrapper}
                 onMouseEnter={handleMouseOver}
                 onMouseLeave={handleMouseLeave}
-                onDrag={() => {
+                onMouseDown={() => {
                     setIsDragging(true);
                     setActive(false);
                 }}
-                onDragEnd={() => setIsDragging(false)}
+                onMouseUp={() => setIsDragging(false)}
             >
                 {children}
             </div>

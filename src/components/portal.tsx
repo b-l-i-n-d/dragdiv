@@ -31,7 +31,7 @@ export const Portal = ({ children, target }: PortalProps) => {
                 el.remove();
             }
         };
-        // @ts-expect-error - This is a hack to get rid of the warning
+        // @ts-expect-error - dumb ts, shut up!
     }, [el, root.nextSibling, root.parentElement]);
 
     return createPortal(children, el!);
