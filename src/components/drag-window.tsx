@@ -1,5 +1,6 @@
-import { MouseEvent, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 
+import { useResize } from "../hooks/use-resize";
 import { DragDiv } from "./drag-div";
 import { Icons } from "./icons";
 
@@ -7,21 +8,6 @@ interface IPosition {
     x: number;
     y: number;
 }
-
-interface ISize {
-    width: number;
-    height: number;
-}
-
-type TResizeType =
-    | "top"
-    | "bottom"
-    | "left"
-    | "right"
-    | "top-left"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-right";
 
 interface IDragWindowProps {
     isDragging: boolean;
@@ -32,8 +18,15 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
     const [isInnerDivDragging, setIsInnerDivDragging] =
         useState<boolean>(false);
     const [position, setPosition] = useState<IPosition>({ x: 0, y: 0 });
-    const [size, setSize] = useState<ISize>({ width: 200, height: 200 });
-    const [resizeType, setResizeType] = useState<TResizeType | null>(null);
+    const {
+        handleResize,
+        position: afterResizePosition,
+        resizeType,
+        size,
+    } = useResize({
+        resizeDivId: "drag-window",
+        parentDivId: "main-window",
+    });
 
     const startPosition: IPosition = { x: 0, y: 0 };
 
@@ -82,118 +75,9 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
         document.body.addEventListener("mouseup", handleMouseUp);
     };
 
-    const handleResize = (e: MouseEvent, type: TResizeType) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const startSize = size;
-        const startPosition = {
-            x: e.pageX,
-            y: e.pageY,
-        };
-
-        const handleMouseMove = (e: MouseEvent) => {
-            const parentRect = document
-                .getElementById("main-window")
-                ?.getBoundingClientRect();
-
-            const deltaX = e.pageX - startPosition.x;
-            const deltaY = e.pageY - startPosition.y;
-
-            const newWidth = startSize.width + deltaX;
-            const newHeight = startSize.height + deltaY;
-
-            const maxX = parentRect ? parentRect.x + parentRect.width : 0;
-            const maxY = parentRect ? parentRect.y + parentRect.height : 0;
-
-            const boundedWidth = Math.min(Math.max(newWidth, 0), maxX);
-            const boundedHeight = Math.min(Math.max(newHeight, 0), maxY);
-
-            setResizeType(type);
-
-            switch (type) {
-                case "top":
-                    setSize({
-                        width: size.width,
-                        height: startSize.height - deltaY,
-                    });
-                    setPosition({
-                        x: position.x,
-                        y: position.y + deltaY,
-                    });
-                    return;
-                case "bottom":
-                    setSize({
-                        width: size.width,
-                        height: boundedHeight,
-                    });
-                    return;
-                case "left":
-                    setSize({
-                        width: startSize.width - deltaX,
-                        height: size.height,
-                    });
-                    setPosition({
-                        x: position.x + deltaX,
-                        y: position.y,
-                    });
-                    return;
-                case "right":
-                    setSize({
-                        width: boundedWidth,
-                        height: size.height,
-                    });
-                    return;
-                case "top-left":
-                    setSize({
-                        width: startSize.width - deltaX,
-                        height: startSize.height - deltaY,
-                    });
-                    setPosition({
-                        x: position.x + deltaX,
-                        y: position.y + deltaY,
-                    });
-                    return;
-                case "top-right":
-                    setSize({
-                        width: boundedWidth,
-                        height: startSize.height - deltaY,
-                    });
-                    setPosition({
-                        x: position.x,
-                        y: position.y + deltaY,
-                    });
-                    return;
-                case "bottom-left":
-                    setSize({
-                        width: startSize.width - deltaX,
-                        height: boundedHeight,
-                    });
-                    setPosition({
-                        x: position.x + deltaX,
-                        y: position.y,
-                    });
-                    return;
-                case "bottom-right":
-                    setSize({
-                        width: boundedWidth,
-                        height: boundedHeight,
-                    });
-                    return;
-            }
-        };
-
-        const handleMouseUp = () => {
-            // @ts-expect-error -- pass event on function
-            document.body.removeEventListener("mousemove", handleMouseMove);
-            document.body.removeEventListener("mouseup", handleMouseUp);
-            setResizeType(null);
-        };
-
-        // @ts-expect-error -- pass event on function
-        document.body.addEventListener("mousemove", handleMouseMove);
-        document.body.addEventListener("mouseup", handleMouseUp);
-    };
+    useEffect(() => {
+        setPosition(afterResizePosition);
+    }, [afterResizePosition]);
 
     return (
         <div
