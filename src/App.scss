@@ -21,6 +21,8 @@
         position: absolute;
         transition: border-color 0.2s ease-in-out;
         background-color: var(--background-color);
+        width: 200px;
+        height: 200px;
 
         &.dragging {
             border: 2px solid #646cff;
@@ -175,6 +177,7 @@
 
         .drag-div {
             display: flex;
+            position: relative;
             justify-content: center;
             align-items: center;
             width: 5rem;

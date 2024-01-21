@@ -19,7 +19,7 @@ export const DragDiv = ({ isDragging, setIsDragging }: IDragDivProps) => {
     };
     const startPosition: IPosition = { x: 0, y: 0 };
 
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleDrag = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
         tooltipDivSize.width = e.currentTarget.getBoundingClientRect().width;
@@ -62,13 +62,14 @@ export const DragDiv = ({ isDragging, setIsDragging }: IDragDivProps) => {
 
     return (
         <div
+            id="drag-div"
             style={{
                 top: position.y,
                 left: position.x,
                 position: "absolute",
                 cursor: "grab",
             }}
-            onMouseDown={(e) => handleMouseDown(e)}
+            onMouseDown={(e) => handleDrag(e)}
         >
             <Tooltip direction="top" content="This is a tooltip">
                 <div className={`drag-div ${isDragging && "dragging"}`}>

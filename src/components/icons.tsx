@@ -32,6 +32,7 @@ export const Icons = ({
     width,
     height,
     color = "none",
+    fill = "none",
     name,
     ...props
 }: TIconSvgProps & { name: keyof typeof iconsObject }) => {
@@ -41,7 +42,8 @@ export const Icons = ({
             height={size || height}
             width={size || width}
             viewBox={icon.viewBox}
-            fill={color}
+            fill={fill}
+            color={color}
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"

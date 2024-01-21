@@ -15,17 +15,20 @@ interface IDragWindowProps {
 }
 
 export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
+    const innerDivRect = document
+        .getElementById("drag-div")
+        ?.getBoundingClientRect();
     const [isInnerDivDragging, setIsInnerDivDragging] =
         useState<boolean>(false);
     const [position, setPosition] = useState<IPosition>({ x: 0, y: 0 });
-    const {
-        handleResize,
-        position: afterResizePosition,
-        resizeType,
-        size,
-    } = useResize({
+    const { handleResize, resizeType, size } = useResize({
         resizeDivId: "drag-window",
-        parentDivId: "main-window",
+        options: {
+            minWidth: innerDivRect?.width,
+            minHeight: innerDivRect?.height,
+            // maxHeight: 500,
+            // maxWidth: 500,
+        },
     });
 
     const startPosition: IPosition = { x: 0, y: 0 };
@@ -76,8 +79,10 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
     };
 
     useEffect(() => {
-        setPosition(afterResizePosition);
-    }, [afterResizePosition]);
+        console.log(size);
+
+        // resizeObserver.observe(document.getElementById("drag-window")!);
+    }, [size]);
 
     return (
         <div
@@ -88,8 +93,6 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
             style={{
                 top: position.y,
                 left: position.x,
-                width: size.width,
-                height: size.height,
             }}
         >
             <DragDiv
@@ -110,7 +113,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
             </div>
 
             <div className="resize-indicator">
-                <Icons name="resize-right" size={14} />
+                <Icons name="resize-right" size={14} color="gray" />
             </div>
             {/* Resize handler */}
             <div
