@@ -66,13 +66,21 @@ export const DragDiv = ({ isDragging, setIsDragging }: IDragDivProps) => {
             style={{
                 top: position.y,
                 left: position.x,
+                width: "80px",
+                height: "80px",
                 position: "absolute",
                 cursor: "grab",
             }}
             onMouseDown={(e) => handleDrag(e)}
         >
             <Tooltip direction="top" content="This is a tooltip">
-                <div className={`drag-div ${isDragging && "dragging"}`}>
+                <div
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                    }}
+                    className={`drag-div ${isDragging && "dragging"}`}
+                >
                     Drag
                 </div>
             </Tooltip>

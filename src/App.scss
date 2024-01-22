@@ -60,10 +60,6 @@
             cursor: col-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .left-resize-handle {
@@ -75,10 +71,6 @@
             cursor: col-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .bottom-resize-handle {
@@ -90,10 +82,6 @@
             cursor: row-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .top-resize-handle {
@@ -105,10 +93,6 @@
             cursor: row-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .top-right-resize-handle {
@@ -120,10 +104,6 @@
             cursor: nesw-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .top-left-resize-handle {
@@ -135,10 +115,6 @@
             cursor: nwse-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .bottom-right-resize-handle {
@@ -150,10 +126,6 @@
             cursor: nwse-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .bottom-left-resize-handle {
@@ -165,10 +137,6 @@
             cursor: nesw-resize;
             transition: all 0.2s ease-in-out;
             border-radius: 0.5rem;
-
-            &:hover {
-                background-color: rgba($color: #fff, $alpha: 0.1);
-            }
         }
 
         .active {
@@ -177,7 +145,7 @@
 
         .drag-div {
             display: flex;
-            position: relative;
+            position: absolute;
             justify-content: center;
             align-items: center;
             width: 5rem;
@@ -187,6 +155,7 @@
             box-shadow: 0 0 1rem #888;
             font-weight: bold;
             transition: all 0.2s ease-in-out;
+            user-select: none;
 
             &:hover {
                 border: 2px solid #646cff;

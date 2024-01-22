@@ -20,7 +20,7 @@ interface ISize {
     height: number;
 }
 
-type TResizeType =
+export type TResizeType =
     | "top"
     | "bottom"
     | "left"

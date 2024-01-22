@@ -1,6 +1,6 @@
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent, useState } from "react";
 
-import { useResize } from "../hooks/use-resize";
+import { TResizeType, useResize } from "../hooks/use-resize";
 import { DragDiv } from "./drag-div";
 import { Icons } from "./icons";
 
@@ -18,16 +18,19 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
     const innerDivRect = document
         .getElementById("drag-div")
         ?.getBoundingClientRect();
+    const parentRect = document
+        .getElementById("main-window")
+        ?.getBoundingClientRect();
     const [isInnerDivDragging, setIsInnerDivDragging] =
         useState<boolean>(false);
     const [position, setPosition] = useState<IPosition>({ x: 0, y: 0 });
-    const { handleResize, resizeType, size } = useResize({
+    const { handleResize, resizeType } = useResize({
         resizeDivId: "drag-window",
         options: {
             minWidth: innerDivRect?.width,
             minHeight: innerDivRect?.height,
-            // maxHeight: 500,
-            // maxWidth: 500,
+            maxHeight: parentRect?.height,
+            maxWidth: parentRect?.width,
         },
     });
 
@@ -78,11 +81,85 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
         document.body.addEventListener("mouseup", handleMouseUp);
     };
 
-    useEffect(() => {
-        console.log(size);
+    const handleDivResize = (e: React.MouseEvent, type: TResizeType) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleResize(e, type);
+        const dragDiv = document.getElementById("drag-div");
+        const dragDivRect = dragDiv?.getBoundingClientRect();
 
-        // resizeObserver.observe(document.getElementById("drag-window")!);
-    }, [size]);
+        const handleMouseMove = (e: React.MouseEvent) => {
+            const dragWindowRect = document
+                .getElementById("drag-window")
+                ?.getBoundingClientRect();
+
+            switch (type) {
+                case "right": {
+                    if (
+                        dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
+                        dragDivRect!.x + dragDivRect!.width > e.pageX
+                    ) {
+                        dragDiv!.style.left = `${
+                            e.pageX - dragWindowRect!.x - dragDivRect!.width
+                        }px`;
+                    }
+                    break;
+                }
+                case "bottom": {
+                    if (
+                        dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
+                        dragDivRect!.y + dragDivRect!.height > e.pageY
+                    ) {
+                        dragDiv!.style.top = `${
+                            e.pageY - dragWindowRect!.y - dragDivRect!.height
+                        }px`;
+                    }
+                    break;
+                }
+                case "bottom-right": {
+                    if (
+                        dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
+                        dragDivRect!.x + dragDivRect!.width > e.pageX
+                    ) {
+                        dragDiv!.style.left = `${
+                            e.pageX - dragWindowRect!.x - dragDivRect!.width
+                        }px`;
+                    }
+                    if (
+                        dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
+                        dragDivRect!.y + dragDivRect!.height > e.pageY
+                    ) {
+                        dragDiv!.style.top = `${
+                            e.pageY - dragWindowRect!.y - dragDivRect!.height
+                        }px`;
+                    }
+                    break;
+                }
+                // case "left": {
+                //     if (
+                //         dragWindowRect!.x + dragWindowRect!.width >=
+                //         e.pageX + dragDivRect!.width
+                //     ) {
+                //         console.log("left");
+                //         // dragDiv!.style.left = `${
+                //         //     e.pageX - dragWindowRect!.x
+                //         // }px`;
+                //     }
+                //     break;
+                // }
+            }
+        };
+
+        const handleMouseUp = () => {
+            // @ts-expect-error -- pass event on function
+            document.body.removeEventListener("mousemove", handleMouseMove);
+            document.body.removeEventListener("mouseup", handleMouseUp);
+        };
+
+        // @ts-expect-error -- pass event on function
+        document.body.addEventListener("mousemove", handleMouseMove);
+        document.body.addEventListener("mouseup", handleMouseUp);
+    };
 
     return (
         <div
@@ -121,21 +198,21 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     (resizeType === "right" || resizeType === "bottom-right") &&
                     "active"
                 }`}
-                onMouseDown={(e) => handleResize(e, "right")}
+                onMouseDown={(e) => handleDivResize(e, "right")}
             ></div>
             <div
                 className={`left-resize-handle ${
                     (resizeType === "left" || resizeType === "top-left") &&
                     "active"
                 }`}
-                onMouseDown={(e) => handleResize(e, "left")}
+                onMouseDown={(e) => handleDivResize(e, "left")}
             ></div>
             <div
                 className={`top-resize-handle ${
                     (resizeType === "top" || resizeType === "top-left") &&
                     "active"
                 }`}
-                onMouseDown={(e) => handleResize(e, "top")}
+                onMouseDown={(e) => handleDivResize(e, "top")}
             ></div>
             <div
                 className={`bottom-resize-handle ${
@@ -143,7 +220,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                         resizeType === "bottom-right") &&
                     "active"
                 }`}
-                onMouseDown={(e) => handleResize(e, "bottom")}
+                onMouseDown={(e) => handleDivResize(e, "bottom")}
             ></div>
             <div
                 className="top-right-resize-handle"
@@ -151,15 +228,15 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
             ></div>
             <div
                 className="top-left-resize-handle"
-                onMouseDown={(e) => handleResize(e, "top-left")}
+                onMouseDown={(e) => handleDivResize(e, "top-left")}
             ></div>
             <div
                 className="bottom-right-resize-handle"
-                onMouseDown={(e) => handleResize(e, "bottom-right")}
+                onMouseDown={(e) => handleDivResize(e, "bottom-right")}
             ></div>
             <div
                 className="bottom-left-resize-handle"
-                onMouseDown={(e) => handleResize(e, "bottom-left")}
+                onMouseDown={(e) => handleDivResize(e, "bottom-left")}
             ></div>
         </div>
     );
