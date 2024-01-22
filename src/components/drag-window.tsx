@@ -1,4 +1,4 @@
-import { MouseEvent, useState } from "react";
+import { useState } from "react";
 
 import { TResizeType, useResize } from "../hooks/use-resize";
 import { DragDiv } from "./drag-div";
@@ -7,6 +7,8 @@ import { Icons } from "./icons";
 interface IPosition {
     x: number;
     y: number;
+    left?: number;
+    top?: number;
 }
 
 interface IDragWindowProps {
@@ -27,8 +29,8 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
     const { handleResize, resizeType } = useResize({
         resizeDivId: "drag-window",
         options: {
-            minWidth: innerDivRect?.width,
-            minHeight: innerDivRect?.height,
+            minWidth: innerDivRect && innerDivRect.width + 4,
+            minHeight: innerDivRect && innerDivRect.height + 4,
             maxHeight: parentRect?.height,
             maxWidth: parentRect?.width,
         },
@@ -48,7 +50,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
         startPosition.x = dragWindowRect!.x;
         startPosition.y = dragWindowRect!.y;
 
-        const handleMouseMove = (e: MouseEvent) => {
+        const handleMouseMove = (e: React.MouseEvent) => {
             const parentRect = document
                 .getElementById("main-window")
                 ?.getBoundingClientRect();
@@ -84,20 +86,33 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
     const handleDivResize = (e: React.MouseEvent, type: TResizeType) => {
         e.preventDefault();
         e.stopPropagation();
+
         handleResize(e, type);
+
         const dragDiv = document.getElementById("drag-div");
         const dragDivRect = dragDiv?.getBoundingClientRect();
+        const dragWindowRect = document
+            .getElementById("drag-window")
+            ?.getBoundingClientRect();
+
+        const startPosition: IPosition = {
+            x: dragDivRect!.x,
+            y: dragDivRect!.y,
+            left: dragDivRect!.x - dragWindowRect!.x,
+            top: dragDivRect!.y - dragWindowRect!.y,
+        };
 
         const handleMouseMove = (e: React.MouseEvent) => {
             const dragWindowRect = document
                 .getElementById("drag-window")
                 ?.getBoundingClientRect();
+            const dragDivRect = dragDiv?.getBoundingClientRect();
 
             switch (type) {
                 case "right": {
                     if (
                         dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
-                        dragDivRect!.x + dragDivRect!.width > e.pageX
+                        startPosition.x + dragDivRect!.width > e.pageX
                     ) {
                         dragDiv!.style.left = `${
                             e.pageX - dragWindowRect!.x - dragDivRect!.width
@@ -108,7 +123,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                 case "bottom": {
                     if (
                         dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
-                        dragDivRect!.y + dragDivRect!.height > e.pageY
+                        startPosition.y + dragDivRect!.height > e.pageY
                     ) {
                         dragDiv!.style.top = `${
                             e.pageY - dragWindowRect!.y - dragDivRect!.height
@@ -119,7 +134,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                 case "bottom-right": {
                     if (
                         dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
-                        dragDivRect!.x + dragDivRect!.width > e.pageX
+                        startPosition.x + dragDivRect!.width > e.pageX
                     ) {
                         dragDiv!.style.left = `${
                             e.pageX - dragWindowRect!.x - dragDivRect!.width
@@ -127,7 +142,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     }
                     if (
                         dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
-                        dragDivRect!.y + dragDivRect!.height > e.pageY
+                        startPosition.y + dragDivRect!.height > e.pageY
                     ) {
                         dragDiv!.style.top = `${
                             e.pageY - dragWindowRect!.y - dragDivRect!.height
@@ -135,18 +150,136 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     }
                     break;
                 }
-                // case "left": {
-                //     if (
-                //         dragWindowRect!.x + dragWindowRect!.width >=
-                //         e.pageX + dragDivRect!.width
-                //     ) {
-                //         console.log("left");
-                //         // dragDiv!.style.left = `${
-                //         //     e.pageX - dragWindowRect!.x
-                //         // }px`;
-                //     }
-                //     break;
-                // }
+                case "left": {
+                    if (
+                        dragDivRect!.x - dragWindowRect!.x <=
+                            (startPosition.left || 0) &&
+                        e.pageX > 0 &&
+                        e.pageX + dragDivRect!.width < dragWindowRect!.right
+                    ) {
+                        dragDiv!.style.left = `${
+                            dragDivRect!.x - dragWindowRect!.x
+                        }px`;
+                    }
+                    if (
+                        dragDivRect!.right - dragWindowRect!.right > 0 &&
+                        e.pageX < dragWindowRect!.right
+                    ) {
+                        dragDiv!.style.left = `${
+                            dragWindowRect!.right - e.pageX - dragDivRect!.width
+                        }px`;
+                    }
+                    break;
+                }
+                case "top": {
+                    if (
+                        dragDivRect!.y - dragWindowRect!.y <=
+                            (startPosition.top || 0) &&
+                        e.pageY > 0 &&
+                        e.pageY + dragDivRect!.height < dragWindowRect!.bottom
+                    ) {
+                        dragDiv!.style.top = `${
+                            dragDivRect!.y - dragWindowRect!.y
+                        }px`;
+                    }
+                    if (dragDivRect!.bottom - dragWindowRect!.bottom > 0) {
+                        dragDiv!.style.top = `${
+                            dragWindowRect!.bottom -
+                            e.pageY -
+                            dragDivRect!.height
+                        }px`;
+                    }
+                    break;
+                }
+                case "top-left": {
+                    if (
+                        dragDivRect!.y - dragWindowRect!.y <=
+                            (startPosition.top || 0) &&
+                        e.pageY > 0 &&
+                        e.pageY + dragDivRect!.height < dragWindowRect!.bottom
+                    ) {
+                        dragDiv!.style.top = `${
+                            dragDivRect!.y - dragWindowRect!.y
+                        }px`;
+                    }
+                    if (
+                        dragDivRect!.x - dragWindowRect!.x <=
+                            (startPosition.left || 0) &&
+                        e.pageX > 0 &&
+                        e.pageX + dragDivRect!.width < dragWindowRect!.right
+                    ) {
+                        dragDiv!.style.left = `${
+                            dragDivRect!.x - dragWindowRect!.x
+                        }px`;
+                    }
+                    if (dragDivRect!.right - dragWindowRect!.right > 0) {
+                        dragDiv!.style.left = `${
+                            dragWindowRect!.right - e.pageX - dragDivRect!.width
+                        }px`;
+                    }
+                    if (dragDivRect!.bottom - dragWindowRect!.bottom > 0) {
+                        dragDiv!.style.top = `${
+                            dragWindowRect!.bottom -
+                            e.pageY -
+                            dragDivRect!.height
+                        }px`;
+                    }
+                    break;
+                }
+                case "top-right": {
+                    if (
+                        dragDivRect!.y - dragWindowRect!.y <=
+                            (startPosition.top || 0) &&
+                        e.pageY > 0 &&
+                        e.pageY + dragDivRect!.height < dragWindowRect!.bottom
+                    ) {
+                        dragDiv!.style.top = `${
+                            dragDivRect!.y - dragWindowRect!.y
+                        }px`;
+                    }
+                    if (dragDivRect!.bottom - dragWindowRect!.bottom > 0) {
+                        dragDiv!.style.top = `${
+                            dragWindowRect!.bottom -
+                            e.pageY -
+                            dragDivRect!.height
+                        }px`;
+                    }
+                    if (
+                        dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
+                        startPosition.x + dragDivRect!.width > e.pageX
+                    ) {
+                        dragDiv!.style.left = `${
+                            e.pageX - dragWindowRect!.x - dragDivRect!.width
+                        }px`;
+                    }
+                    break;
+                }
+                case "bottom-left": {
+                    if (
+                        dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
+                        startPosition.y + dragDivRect!.height > e.pageY
+                    ) {
+                        dragDiv!.style.top = `${
+                            e.pageY - dragWindowRect!.y - dragDivRect!.height
+                        }px`;
+                    }
+                    if (
+                        dragDivRect!.x - dragWindowRect!.x <=
+                            (startPosition.left || 0) &&
+                        e.pageX > 0 &&
+                        e.pageX + dragDivRect!.width < dragWindowRect!.right
+                    ) {
+                        dragDiv!.style.left = `${
+                            dragDivRect!.x - dragWindowRect!.x
+                        }px`;
+                    }
+                    if (dragDivRect!.right - dragWindowRect!.right > 0) {
+                        dragDiv!.style.left = `${
+                            dragWindowRect!.right - e.pageX - dragDivRect!.width
+                        }px`;
+                    }
+                    break;
+                }
             }
         };
 
@@ -224,7 +357,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
             ></div>
             <div
                 className="top-right-resize-handle"
-                onMouseDown={(e) => handleResize(e, "top-right")}
+                onMouseDown={(e) => handleDivResize(e, "top-right")}
             ></div>
             <div
                 className="top-left-resize-handle"

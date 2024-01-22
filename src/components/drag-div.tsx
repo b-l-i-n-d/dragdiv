@@ -1,4 +1,4 @@
-import { MouseEvent, useState } from "react";
+import { useState } from "react";
 import { Tooltip } from "./tooltip/tooltip";
 
 interface IPosition {
@@ -30,7 +30,7 @@ export const DragDiv = ({ isDragging, setIsDragging }: IDragDivProps) => {
         startPosition.x = e.pageX - position.x;
         startPosition.y = e.pageY - position.y;
 
-        const handleMouseMove = (e: MouseEvent) => {
+        const handleMouseMove = (e: React.MouseEvent) => {
             const newX = e.pageX - startPosition.x;
             const newY = e.pageY - startPosition.y;
 
