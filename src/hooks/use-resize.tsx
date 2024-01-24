@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 interface IResizeProps {
     resizeDivId: string;
+    resizeDivRef?: React.RefObject<HTMLDivElement>;
     options?: {
         minWidth?: number;
         minHeight?: number;
@@ -30,7 +31,11 @@ export type TResizeType =
     | "bottom-left"
     | "bottom-right";
 
-export const useResize = ({ resizeDivId, options }: IResizeProps) => {
+export const useResize = ({
+    // resizeDivId,
+    resizeDivRef,
+    options,
+}: IResizeProps) => {
     const [isResizing, setIsResizing] = useState<boolean>(false);
     const [resizeType, setResizeType] = useState<TResizeType | null>(null);
     const [position, setPosition] = useState<IPosition>({
@@ -45,9 +50,7 @@ export const useResize = ({ resizeDivId, options }: IResizeProps) => {
 
         setIsResizing(true);
 
-        const resizeDivRect = document
-            .getElementById(resizeDivId)
-            ?.getBoundingClientRect();
+        const resizeDivRect = resizeDivRef?.current?.getBoundingClientRect();
         const maxSize = {
             width: options?.maxWidth || window.innerWidth,
             height: options?.maxHeight || window.innerHeight,
@@ -95,35 +98,59 @@ export const useResize = ({ resizeDivId, options }: IResizeProps) => {
 
             switch (type) {
                 case "top":
+                    if (minSize.height > startSize.height - deltaY) {
+                        setPosition((prev) => ({
+                            x: prev.x,
+                            y: resizeDivRect!.bottom - minSize.height,
+                        }));
+                        setSize(
+                            getBoundedSize(startSize.width, minSize.height)
+                        );
+                        return;
+                    }
+                    if (e.pageY < resizeDivRect!.top - maxSize.height) {
+                        setPosition((prev) => ({
+                            x: prev.x,
+                            y: resizeDivRect!.bottom - maxSize.height,
+                        }));
+                    }
+                    setPosition({
+                        x: currentPositon.x,
+                        y: currentPositon.y + deltaY,
+                    });
                     setSize(
                         getBoundedSize(
                             startSize.width,
                             startSize.height - deltaY
                         )
                     );
-                    if (minSize.height > startSize.height - deltaY) {
-                        return;
-                    }
-                    setPosition({
-                        x: currentPositon.x,
-                        y: currentPositon.y + deltaY,
-                    });
-                    return;
+                    break;
                 case "bottom":
+                    if (minSize.height > startSize.height + deltaY) {
+                        setSize(
+                            getBoundedSize(startSize.width, minSize.height)
+                        );
+                    }
+
                     setSize(
                         getBoundedSize(
                             startSize.width,
                             startSize.height + deltaY
                         )
                     );
-                    return;
+                    break;
                 case "left":
-                    setSize(
-                        getBoundedSize(
-                            startSize.width - deltaX,
-                            startSize.height
-                        )
-                    );
+                    if (e.pageX > resizeDivRect!.right - minSize.width) {
+                        setPosition((prev) => ({
+                            x: resizeDivRect!.right - minSize.width,
+                            y: prev.y,
+                        }));
+                        setSize(
+                            getBoundedSize(minSize.width, startSize.height)
+                        );
+                        return;
+                    }
+
                     if (minSize.width > startSize.width - deltaX) {
                         return;
                     }
@@ -131,6 +158,12 @@ export const useResize = ({ resizeDivId, options }: IResizeProps) => {
                         x: currentPositon.x + deltaX,
                         y: currentPositon.y,
                     });
+                    setSize(
+                        getBoundedSize(
+                            startSize.width - deltaX,
+                            startSize.height
+                        )
+                    );
                     return;
                 case "right":
                     setSize(
@@ -141,119 +174,115 @@ export const useResize = ({ resizeDivId, options }: IResizeProps) => {
                     );
                     return;
                 case "top-left":
-                    setSize(
-                        getBoundedSize(
-                            startSize.width - deltaX,
-                            startSize.height - deltaY
-                        )
-                    );
-                    if (
-                        minSize.width > startSize.width - deltaX &&
-                        minSize.height <= startSize.height - deltaY
-                    ) {
+                    if (e.pageX > resizeDivRect!.right - minSize.width) {
                         setPosition((prev) => ({
-                            x: prev.x,
-                            y: currentPositon.y + deltaY,
-                        }));
-                        return;
-                    }
-                    if (
-                        minSize.height > startSize.height - deltaY &&
-                        minSize.width <= startSize.width - deltaX
-                    ) {
-                        setPosition((prev) => ({
-                            x: currentPositon.x + deltaX,
+                            x: resizeDivRect!.right - minSize.width,
                             y: prev.y,
                         }));
-                        return;
+                        setSize((prev) =>
+                            getBoundedSize(minSize.width, prev.height)
+                        );
+                    } else {
+                        setPosition({
+                            x: currentPositon.x + deltaX,
+                            y: currentPositon.y + deltaY,
+                        });
+                        setSize(
+                            getBoundedSize(
+                                startSize.width - deltaX,
+                                startSize.height - deltaY
+                            )
+                        );
                     }
-                    if (
-                        minSize.height > startSize.height - deltaY &&
-                        minSize.width > startSize.width - deltaX
-                    ) {
+                    if (minSize.height > startSize.height - deltaY) {
+                        setPosition((prev) => ({
+                            x: prev.x,
+                            y: resizeDivRect!.bottom - minSize.height,
+                        }));
+                        setSize((prev) =>
+                            getBoundedSize(prev.width, minSize.height)
+                        );
+                        // return;
+                    } else {
+                        setPosition({
+                            x: Math.min(
+                                currentPositon.x + deltaX,
+                                resizeDivRect!.right - minSize.width
+                            ),
+                            y: currentPositon.y + deltaY,
+                        });
+                        setSize(
+                            getBoundedSize(
+                                startSize.width - deltaX,
+                                startSize.height - deltaY
+                            )
+                        );
+                    }
+                    return;
+                case "top-right":
+                    if (minSize.height > startSize.height - deltaY) {
+                        setPosition((prev) => ({
+                            x: prev.x,
+                            y: resizeDivRect!.bottom - minSize.height,
+                        }));
+                        setSize(
+                            getBoundedSize(
+                                startSize.width + deltaX,
+                                minSize.height
+                            )
+                        );
+                    } else {
+                        setPosition({
+                            x: currentPositon.x,
+                            y: currentPositon.y + deltaY,
+                        });
+                        setSize(
+                            getBoundedSize(
+                                startSize.width + deltaX,
+                                startSize.height - deltaY
+                            )
+                        );
+                    }
+                    if (e.pageY < resizeDivRect!.top - maxSize.height) {
+                        setPosition((prev) => ({
+                            x: prev.x,
+                            y: resizeDivRect!.bottom - maxSize.height,
+                        }));
+                    }
+                    return;
+                case "bottom-left":
+                    if (minSize.height > startSize.height + deltaY) {
+                        setSize(
+                            getBoundedSize(startSize.width, minSize.height)
+                        );
+                    }
+                    if (e.pageX > resizeDivRect!.right - minSize.width) {
+                        setPosition((prev) => ({
+                            x: resizeDivRect!.right - minSize.width,
+                            y: prev.y,
+                        }));
+                        setSize(
+                            getBoundedSize(
+                                minSize.width,
+                                startSize.height + deltaY
+                            )
+                        );
                         return;
                     }
 
-                    setPosition({
-                        x: currentPositon.x + deltaX,
-                        y: currentPositon.y + deltaY,
-                    });
-                    return;
-                case "top-right":
-                    setSize(
-                        getBoundedSize(
-                            startSize.width + deltaX,
-                            startSize.height - deltaY
-                        )
-                    );
-                    if (
-                        minSize.width > startSize.width + deltaX &&
-                        minSize.height <= startSize.height - deltaY
-                    ) {
-                        setPosition((prev) => ({
-                            x: prev.x,
-                            y: currentPositon.y + deltaY,
-                        }));
-                        return;
-                    }
-                    if (
-                        minSize.height > startSize.height - deltaY &&
-                        minSize.width <= startSize.width + deltaX
-                    ) {
-                        setPosition((prev) => ({
-                            x: currentPositon.x,
-                            y: prev.y,
-                        }));
-                        return;
-                    }
-                    if (
-                        minSize.height > startSize.height - deltaY &&
-                        minSize.width > startSize.width + deltaX
-                    ) {
-                        return;
-                    }
-                    setPosition({
-                        x: currentPositon.x,
-                        y: currentPositon.y + deltaY,
-                    });
-                    return;
-                case "bottom-left":
-                    setSize(
-                        getBoundedSize(
-                            startSize.width - deltaX,
-                            startSize.height + deltaY
-                        )
-                    );
-                    if (
-                        minSize.width > startSize.width - deltaX &&
-                        minSize.height <= startSize.height + deltaY
-                    ) {
-                        setPosition((prev) => ({
-                            x: prev.x,
-                            y: currentPositon.y,
-                        }));
-                        return;
-                    }
-                    if (
-                        minSize.height > startSize.height + deltaY &&
-                        minSize.width <= startSize.width - deltaX
-                    ) {
-                        setPosition((prev) => ({
-                            x: currentPositon.x + deltaX,
-                            y: prev.y,
-                        }));
-                        return;
-                    }
-                    if (
-                        minSize.height > startSize.height + deltaY &&
-                        minSize.width > startSize.width - deltaX
-                    ) {
+                    if (minSize.width > startSize.width - deltaX) {
                         return;
                     }
                     setPosition({
                         x: currentPositon.x + deltaX,
                         y: currentPositon.y,
                     });
+                    setSize(
+                        getBoundedSize(
+                            startSize.width - deltaX,
+                            startSize.height + deltaY
+                        )
+                    );
                     return;
                 case "bottom-right":
                     setSize(
@@ -281,24 +310,26 @@ export const useResize = ({ resizeDivId, options }: IResizeProps) => {
     };
 
     useEffect(() => {
-        const resizeDiv = document.getElementById(resizeDivId);
+        // const resizeDiv = document.getElementById(resizeDivId);
 
-        if (resizeDiv && isResizing) {
-            resizeDiv.style.left = `${position.x}px`;
-            resizeDiv.style.top = `${position.y}px`;
+        if (resizeDivRef?.current && isResizing) {
+            resizeDivRef.current.style.left = `${position.x}px`;
+            resizeDivRef.current.style.top = `${position.y}px`;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [position]);
 
     useEffect(() => {
-        const resizeDiv = document.getElementById(resizeDivId);
+        // const resizeDiv = document.getElementById(resizeDivId);
 
-        if (resizeDiv && isResizing) {
-            resizeDiv.style.width = `${size.width}px`;
-            resizeDiv.style.height = `${size.height}px`;
+        if (resizeDivRef?.current && isResizing) {
+            resizeDivRef.current.style.width = `${size.width}px`;
+            resizeDivRef.current.style.height = `${size.height}px`;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [size]);
+
+    useEffect(() => {}, [resizeDivRef]);
 
     return {
         isResizing,

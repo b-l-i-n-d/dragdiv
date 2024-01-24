@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Tooltip } from "./tooltip/tooltip";
 
 interface IPosition {
@@ -7,12 +7,20 @@ interface IPosition {
 }
 
 interface IDragDivProps {
+    dragDivRef: React.RefObject<HTMLDivElement>;
     isDragging: boolean;
     setIsDragging: (isDragging: boolean) => void;
+    position: IPosition;
+    setPosition: (position: IPosition) => void;
 }
 
-export const DragDiv = ({ isDragging, setIsDragging }: IDragDivProps) => {
-    const [position, setPosition] = useState<IPosition>({ x: 0, y: 0 });
+export const DragDiv = ({
+    dragDivRef,
+    isDragging,
+    setIsDragging,
+    position,
+    setPosition,
+}: IDragDivProps) => {
     const tooltipDivSize = {
         width: 0,
         height: 0,
@@ -29,6 +37,12 @@ export const DragDiv = ({ isDragging, setIsDragging }: IDragDivProps) => {
 
         startPosition.x = e.pageX - position.x;
         startPosition.y = e.pageY - position.y;
+        // console.log(
+        //     startPosition,
+        //     e.pageX,
+        //     position,
+        //     e.currentTarget.getBoundingClientRect().x
+        // );
 
         const handleMouseMove = (e: React.MouseEvent) => {
             const newX = e.pageX - startPosition.x;
@@ -60,8 +74,11 @@ export const DragDiv = ({ isDragging, setIsDragging }: IDragDivProps) => {
         document.body.addEventListener("mouseup", handleMouseUp);
     };
 
+    useEffect(() => {}, [dragDivRef]);
+
     return (
         <div
+            ref={dragDivRef}
             id="drag-div"
             style={{
                 top: position.y,

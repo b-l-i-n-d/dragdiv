@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { TResizeType, useResize } from "../hooks/use-resize";
 import { DragDiv } from "./drag-div";
@@ -17,17 +17,24 @@ interface IDragWindowProps {
 }
 
 export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
-    const innerDivRect = document
-        .getElementById("drag-div")
-        ?.getBoundingClientRect();
     const parentRect = document
         .getElementById("main-window")
         ?.getBoundingClientRect();
+
+    const [innerDivPosition, setInnerDivPosition] = useState<IPosition>({
+        x: 0,
+        y: 0,
+    });
+
+    const dragWindowRef = useRef<HTMLDivElement>(null);
+    const dragDivRef = useRef<HTMLDivElement>(null);
     const [isInnerDivDragging, setIsInnerDivDragging] =
         useState<boolean>(false);
     const [position, setPosition] = useState<IPosition>({ x: 0, y: 0 });
+    const innerDivRect = dragDivRef?.current?.getBoundingClientRect();
     const { handleResize, resizeType } = useResize({
         resizeDivId: "drag-window",
+        resizeDivRef: dragWindowRef,
         options: {
             minWidth: innerDivRect && innerDivRect.width + 4,
             minHeight: innerDivRect && innerDivRect.height + 4,
@@ -41,9 +48,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
     const handleDrag = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        const dragWindowRect = document
-            .getElementById("drag-window")
-            ?.getBoundingClientRect();
+        const dragWindowRect = dragWindowRef?.current?.getBoundingClientRect();
 
         setIsDragging(true);
 
@@ -54,9 +59,8 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
             const parentRect = document
                 .getElementById("main-window")
                 ?.getBoundingClientRect();
-            const dragWindowRect = document
-                .getElementById("drag-window")
-                ?.getBoundingClientRect();
+            const dragWindowRect =
+                dragWindowRef.current?.getBoundingClientRect();
 
             const newX = e.pageX - dragWindowRect!.width + 20;
             const newY = e.pageY - 20;
@@ -89,198 +93,308 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
 
         handleResize(e, type);
 
-        const dragDiv = document.getElementById("drag-div");
-        const dragDivRect = dragDiv?.getBoundingClientRect();
-        const dragWindowRect = document
-            .getElementById("drag-window")
-            ?.getBoundingClientRect();
+        const prevDragDivRect = dragDivRef.current?.getBoundingClientRect();
+        const prevDragWindowRect =
+            dragWindowRef?.current?.getBoundingClientRect();
 
         const startPosition: IPosition = {
-            x: dragDivRect!.x,
-            y: dragDivRect!.y,
-            left: dragDivRect!.x - dragWindowRect!.x,
-            top: dragDivRect!.y - dragWindowRect!.y,
+            x: prevDragDivRect!.x,
+            y: prevDragDivRect!.y,
+            left: prevDragDivRect!.x - prevDragWindowRect!.x,
+            top: prevDragDivRect!.y - prevDragWindowRect!.y,
+        };
+
+        const getInnerDivBoundedPosition = (width: number, height: number) => {
+            const parentRect = dragWindowRef?.current?.getBoundingClientRect();
+
+            const maxX =
+                (parentRect &&
+                    parentRect.right -
+                        parentRect.left -
+                        prevDragDivRect!.width) ||
+                0;
+            const maxY =
+                (parentRect &&
+                    parentRect.bottom -
+                        parentRect.top -
+                        prevDragDivRect!.height) ||
+                0;
+
+            const boundedX = Math.min(Math.max(width, 0), maxX);
+            const boundedY = Math.min(Math.max(height, 0), maxY);
+
+            return { x: boundedX, y: boundedY };
         };
 
         const handleMouseMove = (e: React.MouseEvent) => {
-            const dragWindowRect = document
-                .getElementById("drag-window")
-                ?.getBoundingClientRect();
-            const dragDivRect = dragDiv?.getBoundingClientRect();
-
+            const dragWindowRect =
+                dragWindowRef?.current?.getBoundingClientRect();
+            const dragDivRect = dragDivRef.current?.getBoundingClientRect();
+            // const temp_div_position = { ...innerDivPosition };
             switch (type) {
                 case "right": {
-                    if (
-                        dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
-                        startPosition.x + dragDivRect!.width > e.pageX
-                    ) {
-                        dragDiv!.style.left = `${
-                            e.pageX - dragWindowRect!.x - dragDivRect!.width
-                        }px`;
+                    if (e.pageX > dragDivRect!.right) {
+                        return;
+                    }
+                    if (e.pageX < dragWindowRect!.left) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: 0,
+                        }));
+                        return;
+                    }
+                    if (dragWindowRect!.x <= e.pageX - dragDivRect!.width) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: getInnerDivBoundedPosition(
+                                e.pageX -
+                                    dragWindowRect!.x -
+                                    dragDivRect!.width,
+                                prev.y
+                            ).x,
+                        }));
                     }
                     break;
                 }
                 case "bottom": {
-                    if (
-                        dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
-                        startPosition.y + dragDivRect!.height > e.pageY
-                    ) {
-                        dragDiv!.style.top = `${
-                            e.pageY - dragWindowRect!.y - dragDivRect!.height
-                        }px`;
+                    if (e.pageY > dragDivRect!.bottom) {
+                        return;
+                    }
+
+                    if (e.pageY < dragWindowRect!.top) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: 0,
+                        }));
+                        return;
+                    }
+
+                    if (dragWindowRect!.y <= e.pageY - dragDivRect!.height) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: getInnerDivBoundedPosition(
+                                prev.x,
+                                e.pageY -
+                                    dragWindowRect!.y -
+                                    dragDivRect!.height
+                            ).y,
+                        }));
                     }
                     break;
                 }
                 case "bottom-right": {
-                    if (
-                        dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
-                        startPosition.x + dragDivRect!.width > e.pageX
-                    ) {
-                        dragDiv!.style.left = `${
-                            e.pageX - dragWindowRect!.x - dragDivRect!.width
-                        }px`;
+                    if (dragWindowRect!.right <= dragDivRect!.right) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: getInnerDivBoundedPosition(
+                                e.pageX -
+                                    dragWindowRect!.x -
+                                    dragDivRect!.width,
+                                prev.y
+                            ).x,
+                        }));
                     }
-                    if (
-                        dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
-                        startPosition.y + dragDivRect!.height > e.pageY
-                    ) {
-                        dragDiv!.style.top = `${
-                            e.pageY - dragWindowRect!.y - dragDivRect!.height
-                        }px`;
+                    if (dragWindowRect!.bottom <= dragDivRect!.bottom) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: getInnerDivBoundedPosition(
+                                prev.x,
+                                e.pageY -
+                                    dragWindowRect!.y -
+                                    dragDivRect!.height
+                            ).y,
+                        }));
                     }
                     break;
                 }
                 case "left": {
-                    if (
-                        dragDivRect!.x - dragWindowRect!.x <=
-                            (startPosition.left || 0) &&
-                        e.pageX > 0 &&
-                        e.pageX + dragDivRect!.width < dragWindowRect!.right
-                    ) {
-                        dragDiv!.style.left = `${
-                            dragDivRect!.x - dragWindowRect!.x
-                        }px`;
+                    if (e.pageX >= dragDivRect!.x) {
+                        const newX = startPosition!.x - e.pageX;
+
+                        startPosition.x -= newX;
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: 0,
+                        }));
+
+                        return;
                     }
-                    if (
-                        dragDivRect!.right - dragWindowRect!.right > 0 &&
-                        e.pageX < dragWindowRect!.right
-                    ) {
-                        dragDiv!.style.left = `${
-                            dragWindowRect!.right - e.pageX - dragDivRect!.width
-                        }px`;
+
+                    if (e.pageX < dragDivRect!.x) {
+                        const newX = startPosition!.x - e.pageX;
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: getInnerDivBoundedPosition(newX, prev.y).x,
+                        }));
+
+                        return;
                     }
                     break;
                 }
                 case "top": {
-                    if (
-                        dragDivRect!.y - dragWindowRect!.y <=
-                            (startPosition.top || 0) &&
-                        e.pageY > 0 &&
-                        e.pageY + dragDivRect!.height < dragWindowRect!.bottom
-                    ) {
-                        dragDiv!.style.top = `${
-                            dragDivRect!.y - dragWindowRect!.y
-                        }px`;
+                    if (e.pageY >= dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY;
+
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: 0,
+                        }));
+
+                        startPosition.y -= newY;
+                        return;
                     }
-                    if (dragDivRect!.bottom - dragWindowRect!.bottom > 0) {
-                        dragDiv!.style.top = `${
-                            dragWindowRect!.bottom -
-                            e.pageY -
-                            dragDivRect!.height
-                        }px`;
+
+                    if (e.pageY < dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY;
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: getInnerDivBoundedPosition(prev.x, newY).y,
+                        }));
+
+                        return;
                     }
                     break;
                 }
                 case "top-left": {
-                    if (
-                        dragDivRect!.y - dragWindowRect!.y <=
-                            (startPosition.top || 0) &&
-                        e.pageY > 0 &&
-                        e.pageY + dragDivRect!.height < dragWindowRect!.bottom
-                    ) {
-                        dragDiv!.style.top = `${
-                            dragDivRect!.y - dragWindowRect!.y
-                        }px`;
+                    if (e.pageX >= dragDivRect!.x) {
+                        const newX = startPosition!.x - e.pageX;
+
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: 0,
+                        }));
+
+                        startPosition.x -= newX;
+                        // return;
                     }
-                    if (
-                        dragDivRect!.x - dragWindowRect!.x <=
-                            (startPosition.left || 0) &&
-                        e.pageX > 0 &&
-                        e.pageX + dragDivRect!.width < dragWindowRect!.right
-                    ) {
-                        dragDiv!.style.left = `${
-                            dragDivRect!.x - dragWindowRect!.x
-                        }px`;
+
+                    if (e.pageX < dragDivRect!.x) {
+                        const newX = startPosition!.x - e.pageX;
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: getInnerDivBoundedPosition(newX, prev.y).x,
+                        }));
+
+                        // return;
                     }
-                    if (dragDivRect!.right - dragWindowRect!.right > 0) {
-                        dragDiv!.style.left = `${
-                            dragWindowRect!.right - e.pageX - dragDivRect!.width
-                        }px`;
+                    if (e.pageY >= dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY;
+
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: 0,
+                        }));
+
+                        startPosition.y -= newY;
+                        // return;
                     }
-                    if (dragDivRect!.bottom - dragWindowRect!.bottom > 0) {
-                        dragDiv!.style.top = `${
-                            dragWindowRect!.bottom -
-                            e.pageY -
-                            dragDivRect!.height
-                        }px`;
+
+                    if (e.pageY < dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY;
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: getInnerDivBoundedPosition(prev.x, newY).y,
+                        }));
+
+                        // return;
                     }
                     break;
                 }
                 case "top-right": {
-                    if (
-                        dragDivRect!.y - dragWindowRect!.y <=
-                            (startPosition.top || 0) &&
-                        e.pageY > 0 &&
-                        e.pageY + dragDivRect!.height < dragWindowRect!.bottom
-                    ) {
-                        dragDiv!.style.top = `${
-                            dragDivRect!.y - dragWindowRect!.y
-                        }px`;
+                    if (e.pageY >= dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY;
+
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: 0,
+                        }));
+
+                        startPosition.y -= newY;
+                        // return;
                     }
-                    if (dragDivRect!.bottom - dragWindowRect!.bottom > 0) {
-                        dragDiv!.style.top = `${
-                            dragWindowRect!.bottom -
-                            e.pageY -
-                            dragDivRect!.height
-                        }px`;
+
+                    if (e.pageY < dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY;
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: getInnerDivBoundedPosition(prev.x, newY).y,
+                        }));
+
+                        // return;
                     }
-                    if (
-                        dragWindowRect!.x <= e.pageX - dragDivRect!.width &&
-                        startPosition.x + dragDivRect!.width > e.pageX
-                    ) {
-                        dragDiv!.style.left = `${
-                            e.pageX - dragWindowRect!.x - dragDivRect!.width
-                        }px`;
+                    if (e.pageX > dragDivRect!.right) {
+                        return;
+                    }
+                    if (e.pageX < dragWindowRect!.left) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: 0,
+                        }));
+                        // return;
+                    }
+                    if (dragWindowRect!.x <= e.pageX - dragDivRect!.width) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: getInnerDivBoundedPosition(
+                                e.pageX -
+                                    dragWindowRect!.x -
+                                    dragDivRect!.width,
+                                prev.y
+                            ).x,
+                        }));
                     }
                     break;
                 }
                 case "bottom-left": {
-                    if (
-                        dragWindowRect!.y <= e.pageY - dragDivRect!.height &&
-                        startPosition.y + dragDivRect!.height > e.pageY
-                    ) {
-                        dragDiv!.style.top = `${
-                            e.pageY - dragWindowRect!.y - dragDivRect!.height
-                        }px`;
+                    if (e.pageX >= dragDivRect!.x) {
+                        const newX = startPosition!.x - e.pageX;
+
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: 0,
+                        }));
+
+                        startPosition.x -= newX;
+                        // return;
                     }
-                    if (
-                        dragDivRect!.x - dragWindowRect!.x <=
-                            (startPosition.left || 0) &&
-                        e.pageX > 0 &&
-                        e.pageX + dragDivRect!.width < dragWindowRect!.right
-                    ) {
-                        dragDiv!.style.left = `${
-                            dragDivRect!.x - dragWindowRect!.x
-                        }px`;
+
+                    if (e.pageX < dragDivRect!.x) {
+                        const newX = startPosition!.x - e.pageX;
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            x: getInnerDivBoundedPosition(newX, prev.y).x,
+                        }));
+
+                        // return;
                     }
-                    if (dragDivRect!.right - dragWindowRect!.right > 0) {
-                        dragDiv!.style.left = `${
-                            dragWindowRect!.right - e.pageX - dragDivRect!.width
-                        }px`;
+                    if (e.pageY > dragDivRect!.bottom) {
+                        return;
+                    }
+
+                    if (e.pageY < dragWindowRect!.top) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: 0,
+                        }));
+                        // return;
+                    }
+
+                    if (dragWindowRect!.y <= e.pageY - dragDivRect!.height) {
+                        setInnerDivPosition((prev) => ({
+                            ...prev,
+                            y: getInnerDivBoundedPosition(
+                                prev.x,
+                                e.pageY -
+                                    dragWindowRect!.y -
+                                    dragDivRect!.height
+                            ).y,
+                        }));
                     }
                     break;
                 }
             }
+
+            // setInnerDivPosition(temp_div_position);
         };
 
         const handleMouseUp = () => {
@@ -294,9 +408,12 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
         document.body.addEventListener("mouseup", handleMouseUp);
     };
 
+    useEffect(() => {}, [dragWindowRef, dragDivRef]);
+
     return (
         <div
             id="drag-window"
+            ref={dragWindowRef}
             className={`drag-window ${
                 (isInnerDivDragging || isDragging) && "dragging"
             }`}
@@ -306,6 +423,9 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
             }}
         >
             <DragDiv
+                dragDivRef={dragDivRef}
+                position={innerDivPosition}
+                setPosition={setInnerDivPosition}
                 isDragging={isInnerDivDragging}
                 setIsDragging={setIsInnerDivDragging}
             />
