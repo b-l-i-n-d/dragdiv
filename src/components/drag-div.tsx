@@ -51,10 +51,9 @@ export const DragDiv = ({
             const parentRect = document
                 .getElementById("drag-window")
                 ?.getBoundingClientRect();
-            const maxX =
-                parentRect && parentRect.width - tooltipDivSize.width - 4;
+            const maxX = parentRect && parentRect.width - tooltipDivSize.width;
             const maxY =
-                parentRect && parentRect.height - tooltipDivSize.height - 4;
+                parentRect && parentRect.height - tooltipDivSize.height;
 
             const boundedX = Math.min(Math.max(newX, 0), maxX ? maxX : 0);
             const boundedY = Math.min(Math.max(newY, 0), maxY ? maxY : 0);

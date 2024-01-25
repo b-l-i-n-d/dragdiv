@@ -100,8 +100,6 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
         const startPosition: IPosition = {
             x: prevDragDivRect!.x,
             y: prevDragDivRect!.y,
-            left: prevDragDivRect!.x - prevDragWindowRect!.x,
-            top: prevDragDivRect!.y - prevDragWindowRect!.y,
         };
 
         const getInnerDivBoundedPosition = (width: number, height: number) => {
@@ -125,6 +123,9 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
 
             return { x: boundedX, y: boundedY };
         };
+
+        const pageXGap = prevDragWindowRect!.x - e.pageX;
+        const pageYGap = prevDragWindowRect!.y - e.pageY;
 
         const handleMouseMove = (e: React.MouseEvent) => {
             const dragWindowRect =
@@ -208,8 +209,8 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     break;
                 }
                 case "left": {
-                    if (e.pageX >= dragDivRect!.x) {
-                        const newX = startPosition.x - e.pageX;
+                    if (e.pageX + pageXGap > dragDivRect!.x) {
+                        const newX = startPosition.x - e.pageX - pageXGap;
                         startPosition.x -= newX;
                         setInnerDivPosition((prev) => ({
                             ...prev,
@@ -220,7 +221,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     }
 
                     if (
-                        e.pageX < dragDivRect!.x &&
+                        e.pageX + pageXGap < dragDivRect!.x &&
                         dragDivRect!.right >= dragWindowRect!.right
                     ) {
                         startPosition.x = dragDivRect!.x;
@@ -229,11 +230,12 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                             x:
                                 dragWindowRect!.right -
                                 dragDivRect!.width -
-                                e.pageX,
+                                e.pageX -
+                                pageXGap,
                         }));
                         return;
                     } else {
-                        const newX = startPosition!.x - e.pageX;
+                        const newX = startPosition!.x - e.pageX - pageXGap;
 
                         setInnerDivPosition((prev) => ({
                             ...prev,
@@ -245,8 +247,8 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     break;
                 }
                 case "top": {
-                    if (e.pageY >= dragDivRect!.y) {
-                        const newY = startPosition!.y - e.pageY;
+                    if (e.pageY + pageYGap > dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY - pageYGap;
                         startPosition.y -= newY;
                         setInnerDivPosition((prev) => ({
                             ...prev,
@@ -257,7 +259,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     }
 
                     if (
-                        e.pageY < dragDivRect!.y &&
+                        e.pageY + pageYGap < dragDivRect!.y &&
                         dragDivRect!.bottom >= dragWindowRect!.bottom
                     ) {
                         startPosition.y = dragDivRect!.y;
@@ -266,11 +268,12 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                             y:
                                 dragWindowRect!.bottom -
                                 dragDivRect!.height -
-                                e.pageY,
+                                e.pageY -
+                                pageYGap,
                         }));
                         return;
                     } else {
-                        const newY = startPosition!.y - e.pageY;
+                        const newY = startPosition!.y - e.pageY - pageYGap;
                         setInnerDivPosition((prev) => ({
                             ...prev,
                             y: Math.max(newY, 0) || 0,
@@ -281,8 +284,8 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     break;
                 }
                 case "top-left": {
-                    if (e.pageX >= dragDivRect!.x) {
-                        const newX = startPosition.x - e.pageX;
+                    if (e.pageX + pageXGap > dragDivRect!.x) {
+                        const newX = startPosition.x - e.pageX - pageXGap;
                         startPosition.x -= newX;
                         setInnerDivPosition((prev) => ({
                             ...prev,
@@ -291,7 +294,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
 
                         // return;
                     } else if (
-                        e.pageX < dragDivRect!.x &&
+                        e.pageX + pageXGap < dragDivRect!.x &&
                         dragDivRect!.right >= dragWindowRect!.right
                     ) {
                         startPosition.x = dragDivRect!.x;
@@ -300,11 +303,12 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                             x:
                                 dragWindowRect!.right -
                                 dragDivRect!.width -
-                                e.pageX,
+                                e.pageX -
+                                pageXGap,
                         }));
                         // return;
                     } else {
-                        const newX = startPosition!.x - e.pageX;
+                        const newX = startPosition!.x - e.pageX - pageXGap;
 
                         setInnerDivPosition((prev) => ({
                             ...prev,
@@ -313,8 +317,9 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
 
                         // return;
                     }
-                    if (e.pageY >= dragDivRect!.y) {
-                        const newY = startPosition!.y - e.pageY;
+
+                    if (e.pageY + pageYGap > dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY - pageYGap;
                         startPosition.y -= newY;
                         setInnerDivPosition((prev) => ({
                             ...prev,
@@ -323,7 +328,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
 
                         // return;
                     } else if (
-                        e.pageY < dragDivRect!.y &&
+                        e.pageY + pageYGap < dragDivRect!.y &&
                         dragDivRect!.bottom >= dragWindowRect!.bottom
                     ) {
                         startPosition.y = dragDivRect!.y;
@@ -332,11 +337,12 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                             y:
                                 dragWindowRect!.bottom -
                                 dragDivRect!.height -
-                                e.pageY,
+                                e.pageY -
+                                pageYGap,
                         }));
                         // return;
                     } else {
-                        const newY = startPosition!.y - e.pageY;
+                        const newY = startPosition!.y - e.pageY - pageYGap;
                         setInnerDivPosition((prev) => ({
                             ...prev,
                             y: Math.max(newY, 0) || 0,
@@ -347,15 +353,15 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     break;
                 }
                 case "top-right": {
-                    if (e.pageY >= dragDivRect!.y) {
-                        const newY = startPosition!.y - e.pageY;
+                    if (e.pageY + pageYGap > dragDivRect!.y) {
+                        const newY = startPosition!.y - e.pageY - pageYGap;
                         startPosition.y -= newY;
                         setInnerDivPosition((prev) => ({
                             ...prev,
                             y: 0,
                         }));
                     } else if (
-                        e.pageY < dragDivRect!.y &&
+                        e.pageY + pageYGap < dragDivRect!.y &&
                         dragDivRect!.bottom >= dragWindowRect!.bottom
                     ) {
                         startPosition.y = dragDivRect!.y;
@@ -364,10 +370,11 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                             y:
                                 dragWindowRect!.bottom -
                                 dragDivRect!.height -
-                                e.pageY,
+                                e.pageY -
+                                pageYGap,
                         }));
                     } else {
-                        const newY = startPosition!.y - e.pageY;
+                        const newY = startPosition!.y - e.pageY - pageYGap;
                         setInnerDivPosition((prev) => ({
                             ...prev,
                             y: Math.max(newY, 0) || 0,
@@ -423,15 +430,15 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                         }));
                     }
 
-                    if (e.pageX >= dragDivRect!.x) {
-                        const newX = startPosition.x - e.pageX;
+                    if (e.pageX + pageXGap > dragDivRect!.x) {
+                        const newX = startPosition.x - e.pageX - pageXGap;
                         startPosition.x -= newX;
                         setInnerDivPosition((prev) => ({
                             ...prev,
                             x: 0,
                         }));
                     } else if (
-                        e.pageX < dragDivRect!.x &&
+                        e.pageX + pageXGap < dragDivRect!.x &&
                         dragDivRect!.right >= dragWindowRect!.right
                     ) {
                         startPosition.x = dragDivRect!.x;
@@ -440,10 +447,11 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                             x:
                                 dragWindowRect!.right -
                                 dragDivRect!.width -
-                                e.pageX,
+                                e.pageX -
+                                pageXGap,
                         }));
                     } else {
-                        const newX = startPosition!.x - e.pageX;
+                        const newX = startPosition!.x - e.pageX - pageXGap;
 
                         setInnerDivPosition((prev) => ({
                             ...prev,
