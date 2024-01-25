@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { throttle } from "../utils/throttle";
 import { Tooltip } from "./tooltip/tooltip";
 
 interface IPosition {
@@ -44,7 +45,7 @@ export const DragDiv = ({
         //     e.currentTarget.getBoundingClientRect().x
         // );
 
-        const handleMouseMove = (e: React.MouseEvent) => {
+        const handleMouseMove = throttle((e: React.MouseEvent) => {
             const newX = e.pageX - startPosition.x;
             const newY = e.pageY - startPosition.y;
 
@@ -59,16 +60,16 @@ export const DragDiv = ({
             const boundedY = Math.min(Math.max(newY, 0), maxY ? maxY : 0);
 
             setPosition({ x: boundedX, y: boundedY });
-        };
+        }, 10);
 
         const handleMouseUp = () => {
             setIsDragging(false);
-            // @ts-expect-error -- pass event on function
+            // @ts-expect-error -- pass event to removeEventListener
             document.body.removeEventListener("mousemove", handleMouseMove);
             document.body.removeEventListener("mouseup", handleMouseUp);
         };
 
-        // @ts-expect-error -- pass event on function
+        // @ts-expect-error -- pass event to addEventListener
         document.body.addEventListener("mousemove", handleMouseMove);
         document.body.addEventListener("mouseup", handleMouseUp);
     };

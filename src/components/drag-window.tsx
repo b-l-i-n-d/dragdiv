@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { TResizeType, useResize } from "../hooks/use-resize";
+import { throttle } from "../utils/throttle";
 import { DragDiv } from "./drag-div";
 import { Icons } from "./icons";
 
@@ -55,7 +56,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
         startPosition.x = dragWindowRect!.x;
         startPosition.y = dragWindowRect!.y;
 
-        const handleMouseMove = (e: React.MouseEvent) => {
+        const handleMouseMove = throttle((e: React.MouseEvent) => {
             const parentRect = document
                 .getElementById("main-window")
                 ?.getBoundingClientRect();
@@ -73,7 +74,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
             const boundedY = Math.min(Math.max(newY, 0), maxY ? maxY : 0);
 
             setPosition({ x: boundedX, y: boundedY });
-        };
+        }, 10);
 
         const handleMouseUp = () => {
             setIsDragging(false);
@@ -127,7 +128,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
         const pageXGap = prevDragWindowRect!.x - e.pageX;
         const pageYGap = prevDragWindowRect!.y - e.pageY;
 
-        const handleMouseMove = (e: React.MouseEvent) => {
+        const handleMouseMove = throttle((e: React.MouseEvent) => {
             const dragWindowRect =
                 dragWindowRef?.current?.getBoundingClientRect();
             const dragDivRect = dragDivRef.current?.getBoundingClientRect();
@@ -461,7 +462,7 @@ export const DragWindow = ({ isDragging, setIsDragging }: IDragWindowProps) => {
                     break;
                 }
             }
-        };
+        }, 10);
 
         const handleMouseUp = () => {
             // @ts-expect-error -- pass event on function

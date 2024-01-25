@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { throttle } from "../utils/throttle";
 
 interface IResizeProps {
     resizeDivId: string;
@@ -90,7 +91,7 @@ export const useResize = ({
             y: e.pageY,
         };
 
-        const handleMouseMove = (e: React.MouseEvent) => {
+        const handleMouseMove = throttle((e: React.MouseEvent) => {
             const deltaX = e.pageX - startPosition.x;
             const deltaY = e.pageY - startPosition.y;
 
@@ -293,7 +294,7 @@ export const useResize = ({
                     );
                     return;
             }
-        };
+        }, 10);
 
         const handleMouseUp = () => {
             setIsResizing(false);
